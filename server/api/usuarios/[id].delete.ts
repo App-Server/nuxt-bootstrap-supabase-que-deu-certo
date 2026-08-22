@@ -1,28 +1,19 @@
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const params = getRouterParams(event)
-  const id = params.id
+  const id = getRouterParam(event, 'id')
+  const client = await serverSupabaseServiceRole(event)
 
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'ID não informado.' })
+    throw createError({ statusCode: 400, statusMessage: 'ID do usuário não fornecido' })
   }
 
-  try {
-    const client = await serverSupabaseClient<any>(event)
+  // Deleta o usuário diretamente do Supabase Auth
+  const { error } = await client.auth.admin.deleteUser(id)
 
-    const { error } = await client
-      .from('usuarios')
-      .delete()
-      .eq('id', id)
-
-    if (error) {
-      throw createError({ statusCode: 500, statusMessage: 'Erro ao excluir usuário no banco de dados.' })
-    }
-
-    return { sucesso: true, mensagem: 'Usuário excluído com sucesso!' }
-  } catch (err: any) {
-    if (err.statusCode) throw err
-    throw createError({ statusCode: 500, statusMessage: err.message || 'Erro interno no servidor.' })
+  if (error) {
+    throw createError({ statusCode: 400, statusMessage: error.message })
   }
+
+  return { sucesso: true }
 })

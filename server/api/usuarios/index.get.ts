@@ -1,27 +1,20 @@
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const client = await serverSupabaseClient<any>(event)
+  // Conecta ao Supabase com privilégios de Admin para ler o Auth
+  const client = await serverSupabaseServiceRole(event)
+  
+  const { data: { users }, error } = await client.auth.admin.listUsers()
 
-    // Busca apenas campos públicos (ocultando a senha)
-    const { data, error } = await client
-      .from('usuarios')
-      .select('id, nome, email, created_at')
-      .order('id', { ascending: false })
-
-    if (error) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Erro ao buscar usuários do banco.'
-      })
-    }
-
-    return { sucesso: true, usuarios: data }
-  } catch (err: any) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: err.message || 'Erro interno no servidor.'
-    })
+  if (error) {
+    throw createError({ statusCode: 500, statusMessage: error.message })
   }
+
+  // Mapeia os usuários retornando nome e e-mail
+  return users.map(user => ({
+    id: user.id,
+    email: user.email,
+    nome: user.user_metadata?.nome || 'Sem Nome',
+    created_at: user.created_at
+  }))
 })

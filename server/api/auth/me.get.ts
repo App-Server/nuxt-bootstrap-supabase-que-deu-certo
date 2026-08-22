@@ -1,14 +1,22 @@
-export default defineEventHandler((event) => {
-  const sessionCookie = getCookie(event, 'auth_session')
+import { serverSupabaseUser } from '#supabase/server'
 
-  if (!sessionCookie) {
-    return { autenticado: false, usuario: null }
-  }
-
+export default defineEventHandler(async (event) => {
   try {
-    const usuario = JSON.parse(sessionCookie)
-    return { autenticado: true, usuario }
-  } catch {
+    // Busca o usuário logado na sessão do Supabase
+    const user = await serverSupabaseUser(event)
+
+    if (!user) {
+      return { autenticado: false, usuario: null }
+    }
+
+    return { 
+      autenticado: true, 
+      usuario: {
+        id: user.id,
+        email: user.email
+      } 
+    }
+  } catch (err) {
     return { autenticado: false, usuario: null }
   }
 })

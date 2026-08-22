@@ -1,29 +1,25 @@
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  // Pega o parâmetro :id diretamente da URL da requisição
-  const id = event.context.params?.id
+  const id = getRouterParam(event, 'id')
+  const client = await serverSupabaseServiceRole(event)
 
   if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'ID não informado.' })
+    throw createError({ statusCode: 400, statusMessage: 'ID do usuário não fornecido' })
   }
 
-  try {
-    const client = await serverSupabaseClient<any>(event)
+  // Busca o usuário específico no Supabase Auth
+  const { data: { user }, error } = await client.auth.admin.getUserById(id)
 
-    const { data, error } = await client
-      .from('usuarios')
-      .select('id, nome, email, created_at')
-      .eq('id', id)
-      .single()
+  if (error || !user) {
+    throw createError({ statusCode: 404, statusMessage: 'Usuário não encontrado' })
+  }
 
-    if (error || !data) {
-      throw createError({ statusCode: 404, statusMessage: 'Usuário não encontrado.' })
+  return {
+    usuario: {
+      id: user.id,
+      email: user.email,
+      nome: user.user_metadata?.nome || ''
     }
-
-    return { sucesso: true, usuario: data }
-  } catch (err: any) {
-    if (err.statusCode) throw err
-    throw createError({ statusCode: 500, statusMessage: err.message || 'Erro interno.' })
   }
 })

@@ -1,92 +1,56 @@
 <script setup>
-const form = ref({
-  nome: '',
-  email: '',
-  senha: ''
-})
+const email = ref('')
+const senha = ref('')
+const nome = ref('')
+const erro = ref('')
+const carregando = ref(false)
 
-const enviando = ref(false)
-const mensagem = ref('')
-
-async function cadastrarUsuario() {
-  enviando.value = true
-  mensagem.value = ''
+const cadastrarUsuario = async () => {
+  erro.value = ''
+  carregando.value = true
 
   try {
-    await $fetch('/api/usuarios/cadastro', {
+    // Chama o endpoint de cadastro criando o usuário diretamente no Auth
+    const response = await $fetch('/api/usuarios/cadastrar', {
       method: 'POST',
-      body: form.value
+      body: { 
+        email: email.value, 
+        senha: senha.value, 
+        nome: nome.value 
+      }
     })
-    
-    mensagem.value = 'Usuário cadastrado com sucesso!'
-    form.value = { nome: '', email: '', senha: '' }
-  } catch (err) {
-    mensagem.value = 'Erro ao cadastrar: ' + (err.statusMessage || err.message)
+
+    await navigateTo('/usuarios')
+  } catch (e) {
+    erro.value = e.data?.statusMessage || 'Erro ao cadastrar usuário'
   } finally {
-    enviando.value = false
+    carregando.value = false
   }
 }
 </script>
 
 <template>
-  <div>
-    <NavbarAdmin />
-    <div class="container-fluid mt-4">
-      <h3>Cadastrar novo Usuário</h3>
-
-      <div class="card mt-3">
-        <div class="card-body">
-          <div v-if="mensagem" class="alert alert-info">{{ mensagem }}</div>
-
-          <form @submit.prevent="cadastrarUsuario">
-            <div class="mb-3">
-              <label for="nome" class="form-label">Nome Completo</label>
-              <input 
-                v-model="form.nome" 
-                type="text" 
-                class="form-control" 
-                id="nome" 
-                required 
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input 
-                v-model="form.email" 
-                type="email" 
-                class="form-control" 
-                id="email" 
-                required 
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="senha" class="form-label">Password</label>
-              <input 
-                v-model="form.senha" 
-                type="password" 
-                class="form-control" 
-                id="senha" 
-                required 
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              class="btn btn-primary my-3" 
-              :disabled="enviando"
-            >
-              {{ enviando ? 'Salvando...' : 'Salvar' }}
-            </button>
-          </form>
-        </div>
+  <NavbarAdmin />
+  <div class="container mt-4" style="max-width: 500px;">
+    <h2>Novo Usuário</h2>
+    <div v-if="erro" class="alert alert-danger py-2">{{ erro }}</div>
+    
+    <form @submit.prevent="cadastrarUsuario">
+      <div class="mb-3">
+        <label class="form-label">Nome Completo</label>
+        <input v-model="nome" type="text" class="form-control" required />
       </div>
-    </div>
+      <div class="mb-3">
+        <label class="form-label">E-mail</label>
+        <input v-model="email" type="email" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Senha</label>
+        <input v-model="senha" type="password" class="form-control" required />
+      </div>
+      <button type="submit" class="btn btn-primary w-100" :disabled="carregando">
+        {{ carregando ? 'Cadastrando...' : 'Salvar Usuário' }}
+      </button>
+    </form>
   </div>
 </template>
-
-<!-- Se houver uma tag style no final do arquivo, certifique-se de que ela está assim: -->
-<style scoped>
-/* Apenas regras CSS aqui dentro. Se estiver vazio ou não usar estilos customizados, remova o bloco <style> inteiro. */
-</style>
