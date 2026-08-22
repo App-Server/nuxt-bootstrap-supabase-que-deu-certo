@@ -26,7 +26,7 @@ const deletarUsuario = async (id, nome) => {
 
 <template>
   <NavbarAdmin />
-  <div class="container my-4">
+  <div class="container-fluid">
     <!-- Cabeçalho com Título e Botão de Novo -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="mb-0">Lista de Usuários</h2>

@@ -31,7 +31,7 @@ const cadastrarUsuario = async () => {
 
 <template>
   <NavbarAdmin />
-  <div class="container mt-4" style="max-width: 500px;">
+  <div class="container" style="max-width: 500px;">
     <h2>Novo Usuário</h2>
     <div v-if="erro" class="alert alert-danger py-2">{{ erro }}</div>
     

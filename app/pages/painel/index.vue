@@ -6,7 +6,7 @@ const { data: usuarios, pending } = await useFetch('/api/usuarios')
 <template>
   <div>
     <NavbarAdmin />
-    <div class="container my-4">
+    <div class="container-fluid">
       <h3 class="mb-4">Painel Administrativo</h3>
 
       <div class="row">
