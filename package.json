@@ -2,9 +2,6 @@
   "name": "nuxt-tailwind-supabase",
   "type": "module",
   "private": true,
-  "engines": {
-  "node": ">=22.19.0"
-},
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -23,5 +20,8 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
